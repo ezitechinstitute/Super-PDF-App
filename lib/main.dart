@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'core/services/auth_storage.dart';
-import 'features/auth/screens/login_screen.dart';
 import 'features/home/screens/home_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 
