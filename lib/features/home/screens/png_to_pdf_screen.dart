@@ -94,22 +94,6 @@ class _PngToPdfScreenState extends State<PngToPdfScreen> {
   }
 
   // ============================================================
-  // GET EXTENSION
-  // ============================================================
-
-  String _getExtension(XFile image) {
-    final String name = image.name.toLowerCase().trim();
-
-    final int dotIndex = name.lastIndexOf('.');
-
-    if (dotIndex == -1 || dotIndex == name.length - 1) {
-      return '';
-    }
-
-    return name.substring(dotIndex + 1);
-  }
-
-  // ============================================================
   // REMOVE IMAGE
   // ============================================================
 

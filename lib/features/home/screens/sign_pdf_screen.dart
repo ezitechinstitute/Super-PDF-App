@@ -807,7 +807,7 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemCount: _pageCount,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
               itemBuilder: (context, index) {
                 final bool selected = _selectedPageIndex == index;
 
@@ -1176,7 +1176,7 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _signatureFontFamilies.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        separatorBuilder: (_, _) => const SizedBox(width: 10),
                         itemBuilder: (context, index) {
                           final bool selected =
                               _selectedSignatureStyle == index;

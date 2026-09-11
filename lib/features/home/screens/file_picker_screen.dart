@@ -733,14 +733,12 @@ class _FilePickerScreenState extends State<FilePickerScreen> {
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String title;
-  final bool outlined;
   final VoidCallback onTap;
 
   const _ActionButton({
     required this.icon,
     required this.title,
     required this.onTap,
-    this.outlined = false,
   });
 
   @override
@@ -754,31 +752,23 @@ class _ActionButton extends StatelessWidget {
           height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
-            gradient: outlined
-                ? null
-                : const LinearGradient(
-                    colors: [Color(0xFF2D7BFF), Color(0xFF0958EA)],
-                  ),
-            color: outlined ? Colors.white.withValues(alpha: 0.45) : null,
-            border: outlined
-                ? Border.all(color: const Color(0xFF9FC2F3), width: 1.1)
-                : null,
-            boxShadow: outlined
-                ? null
-                : [
-                    BoxShadow(
-                      color: const Color(0xFF1769FF).withValues(alpha: 0.20),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2D7BFF), Color(0xFF0958EA)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1769FF).withValues(alpha: 0.20),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                color: outlined ? const Color(0xFF1769FF) : Colors.white,
+                color: Colors.white,
                 size: 21,
               ),
               const SizedBox(width: 8),
@@ -788,7 +778,7 @@ class _ActionButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: outlined ? const Color(0xFF1769FF) : Colors.white,
+                    color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -858,78 +848,6 @@ class _FormatCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ============================================================
-// RECENT FILE ROW
-// ============================================================
-
-class _RecentFileRow extends StatelessWidget {
-  final String name;
-  final String size;
-  final IconData icon;
-  final Color color;
-
-  const _RecentFileRow({
-    required this.name,
-    required this.size,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-
-          const SizedBox(width: 11),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF10255C),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$size  •  Recently',
-                  style: const TextStyle(
-                    color: Color(0xFF7A8CA6),
-                    fontSize: 10.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: Color(0xFF7184A4),
-            size: 20,
-          ),
-        ],
       ),
     );
   }

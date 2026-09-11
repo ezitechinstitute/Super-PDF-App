@@ -160,7 +160,7 @@ class _OcrScreenState extends State<OcrScreen> {
     final List<String> pageTexts = <String>[];
 
     try {
-      final int pageCount = await pdfDocument.pagesCount;
+      final int pageCount = pdfDocument.pagesCount;
 
       for (int pageNumber = 1; pageNumber <= pageCount; pageNumber++) {
         if (!mounted) {
