@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart' as pw_pdf;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:pdf_super_app/core/services/api_service.dart';
 import 'package:pdf_super_app/features/home/screens/pdf_preview_screen.dart';
