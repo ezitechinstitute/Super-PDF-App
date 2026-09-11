@@ -29,7 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoggingOut = false;
 
   String? _avatarUrl;
-  String? _errorMessage;
 
   @override
   void initState() {
@@ -54,7 +53,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -116,8 +114,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() {
         _isLoading = false;
-        _errorMessage = _extractDioError(e);
       });
+
+      _showMessage(_extractDioError(e));
     } catch (e) {
       debugPrint('==========================================');
       debugPrint('❌ PROFILE ERROR');
@@ -128,8 +127,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Unable to load profile.';
       });
+
+      _showMessage('Unable to load profile.');
     }
   }
 
@@ -896,7 +896,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             },
-            errorBuilder: (_, __, ___) {
+            errorBuilder: (_, _, _) {
               debugPrint('❌ Avatar image failed: $_avatarUrl');
 
               return _avatarPlaceholder();

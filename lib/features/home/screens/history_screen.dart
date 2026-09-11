@@ -366,65 +366,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return const Color(0xFFF45151);
   }
 
-  String _formatFileSize(int? bytes) {
-    if (bytes == null) {
-      return 'Unknown size';
-    }
-
-    if (bytes < 1024) {
-      return '$bytes B';
-    }
-
-    if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    }
-
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-    }
-
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
-  }
-
-  String _formatDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Recently';
-    }
-
-    final date = DateTime.tryParse(value);
-
-    if (date == null) {
-      return 'Recently';
-    }
-
-    final localDate = date.toLocal();
-    final now = DateTime.now();
-
-    final difference = now.difference(localDate);
-
-    if (difference.inSeconds < 60) {
-      return 'Just now';
-    }
-
-    if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} min ago';
-    }
-
-    if (difference.inHours < 24) {
-      return '${difference.inHours} hr ago';
-    }
-
-    if (difference.inDays == 1) {
-      return 'Yesterday';
-    }
-
-    if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    }
-
-    return '${localDate.day}/${localDate.month}/${localDate.year}';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

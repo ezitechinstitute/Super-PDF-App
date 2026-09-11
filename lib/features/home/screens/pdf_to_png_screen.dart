@@ -284,6 +284,12 @@ class _PdfToPngScreenState extends State<PdfToPngScreen> {
         );
       }
 
+      // The history call above is awaited, so this screen may have been
+      // popped while that request was in flight.
+      if (!mounted) {
+        return;
+      }
+
       // ========================================================
       // SINGLE PNG
       // ========================================================

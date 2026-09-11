@@ -654,7 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   return _avatarPlaceholder();
                 },
-                errorBuilder: (_, __, ___) {
+                errorBuilder: (_, _, _) {
                   debugPrint('❌ Home avatar failed: $_avatarUrl');
 
                   return _avatarPlaceholder();
