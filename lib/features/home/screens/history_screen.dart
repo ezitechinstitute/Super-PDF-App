@@ -179,6 +179,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (confirmed != true) return;
 
+    // The dialog above is awaited; the screen can be popped while it is open.
+    if (!mounted) return;
+
     setState(() {
       _isDeletingAll = true;
     });

@@ -20,7 +20,10 @@ class PdfSuperApp extends StatelessWidget {
       title: 'PDF Super App',
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Arial',
+        // No fontFamily: 'Arial' does not exist on Android, so the app fell
+        // back to Roboto there while genuinely rendering Arial on iOS. Leaving
+        // it unset gives each platform its own default and keeps the two
+        // consistent with their system UI.
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const AuthGate(),

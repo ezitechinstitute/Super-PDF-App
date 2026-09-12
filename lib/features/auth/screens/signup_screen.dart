@@ -269,7 +269,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         SizedBox(
           height: 180,
           width: double.infinity,
-          child: Image.asset('assets/images/signup.png', fit: BoxFit.contain),
+          child: Image.asset('assets/images/signup.webp', fit: BoxFit.contain),
         ),
         const SizedBox(height: 8),
         const Text(
