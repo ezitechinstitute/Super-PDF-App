@@ -18,6 +18,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  /// Lets the keyboard's "next" key move from email to password, which is
+  /// otherwise unreachable while the keyboard covers it.
+  final _passwordFocus = FocusNode();
+
   bool _obscurePassword = true;
   bool _rememberMe = true;
   bool _isLoading = false;
@@ -26,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -281,6 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: 'Enter your email',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                nextFocus: _passwordFocus,
               ),
 
               const SizedBox(height: 18),
@@ -294,6 +300,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: 'Enter your password',
                 icon: Icons.lock_outline_rounded,
                 obscureText: _obscurePassword,
+                focusNode: _passwordFocus,
+                isLast: true,
                 suffixIcon: IconButton(
                   onPressed: _isLoading
                       ? null
@@ -406,12 +414,24 @@ class _LoginScreenState extends State<LoginScreen> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
+    bool isLast = false,
   }) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       enabled: !_isLoading,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      textInputAction: isLast ? TextInputAction.done : TextInputAction.next,
+      onSubmitted: (_) {
+        if (nextFocus != null) {
+          nextFocus.requestFocus();
+        } else {
+          FocusScope.of(context).unfocus();
+        }
+      },
       style: const TextStyle(
         color: Color(0xFF16233A),
         fontSize: 14,
