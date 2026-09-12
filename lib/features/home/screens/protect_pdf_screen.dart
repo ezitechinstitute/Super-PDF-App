@@ -27,6 +27,10 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
   final TextEditingController _existingPasswordController =
       TextEditingController();
 
+  /// Lets the keyboard's "next" key jump straight to the confirm field.
+  /// Without it the field sits behind the keyboard with no way to reach it.
+  final FocusNode _confirmPasswordFocus = FocusNode();
+
   bool _isInitializing = true;
   bool _isProtectedPdf = false;
   bool _existingPasswordVerified = false;
@@ -51,6 +55,7 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _existingPasswordController.dispose();
+    _confirmPasswordFocus.dispose();
     super.dispose();
   }
 
@@ -650,7 +655,12 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
         Expanded(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+            padding: EdgeInsets.fromLTRB(
+              18,
+              12,
+              18,
+              24 + MediaQuery.viewInsetsOf(context).bottom,
+            ),
             child: Column(
               children: [
                 _buildFileCard(),
@@ -763,7 +773,14 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
         Expanded(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+            // Extra bottom room so the fields and the action button can be
+            // scrolled clear of the keyboard.
+            padding: EdgeInsets.fromLTRB(
+              18,
+              4,
+              18,
+              24 + MediaQuery.viewInsetsOf(context).bottom,
+            ),
             child: Column(
               children: [
                 _buildHeroCard(),
@@ -971,6 +988,8 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
             controller: _passwordController,
             obscureText: _obscurePassword,
             enabled: !_isProtecting,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => _confirmPasswordFocus.requestFocus(),
             style: const TextStyle(color: Color(0xFF10255C)),
             decoration: _inputDecoration(
               label: 'New Password',
@@ -987,8 +1006,11 @@ class _ProtectPdfScreenState extends State<ProtectPdfScreen> {
           const SizedBox(height: 14),
           TextField(
             controller: _confirmPasswordController,
+            focusNode: _confirmPasswordFocus,
             obscureText: _obscureConfirmPassword,
             enabled: !_isProtecting,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
             style: const TextStyle(color: Color(0xFF10255C)),
             decoration: _inputDecoration(
               label: 'Confirm Password',

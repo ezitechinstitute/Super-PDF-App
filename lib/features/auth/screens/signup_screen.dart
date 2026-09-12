@@ -20,6 +20,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  /// One node per field so the keyboard's "next" key walks down the form.
+  /// Without them a field below the keyboard cannot be reached at all.
+  final _emailFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
@@ -32,6 +39,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _emailFocus.dispose();
+    _phoneFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmPasswordFocus.dispose();
     super.dispose();
   }
 
@@ -313,6 +324,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 hint: 'Enter your full name',
                 icon: Icons.person_outline_rounded,
                 keyboardType: TextInputType.name,
+                nextFocus: _emailFocus,
               ),
 
               const SizedBox(height: 16),
@@ -324,6 +336,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 hint: 'Enter your email',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                focusNode: _emailFocus,
+                nextFocus: _phoneFocus,
               ),
 
               const SizedBox(height: 16),
@@ -335,6 +349,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 hint: 'Enter your phone number',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
+                focusNode: _phoneFocus,
+                nextFocus: _passwordFocus,
               ),
 
               const SizedBox(height: 16),
@@ -346,6 +362,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 hint: 'Create a password',
                 icon: Icons.lock_outline_rounded,
                 obscureText: _obscurePassword,
+                focusNode: _passwordFocus,
+                nextFocus: _confirmPasswordFocus,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -369,6 +387,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _confirmPasswordController,
                 hint: 'Confirm your password',
                 icon: Icons.lock_outline_rounded,
+                focusNode: _confirmPasswordFocus,
+                isLast: true,
                 obscureText: _obscureConfirmPassword,
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -475,12 +495,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
+    bool isLast = false,
   }) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       enabled: !_isLoading,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      textInputAction: isLast ? TextInputAction.done : TextInputAction.next,
+      onSubmitted: (_) {
+        if (nextFocus != null) {
+          nextFocus.requestFocus();
+        } else {
+          FocusScope.of(context).unfocus();
+        }
+      },
       style: const TextStyle(
         color: Color(0xFF16233A),
         fontSize: 14,
