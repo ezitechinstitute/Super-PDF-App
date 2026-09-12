@@ -9,6 +9,7 @@ import 'package:pdf_super_app/features/home/screens/compress_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/protect_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/remove_pages_screen.dart';
 import 'package:pdf_super_app/features/home/screens/extract_pages_screen.dart';
+import 'package:pdf_super_app/features/home/screens/pdf_to_text_screen.dart';
 import 'package:pdf_super_app/features/home/screens/reorder_pages_screen.dart';
 import 'package:pdf_super_app/features/home/screens/rotate_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/sign_pdf_screen.dart';
@@ -250,6 +251,28 @@ class _FilePickerScreenState extends State<FilePickerScreen> {
 
         return;
       }
+      // ==========================================================
+      // PDF TO TEXT
+      // ==========================================================
+
+      if (widget.toolName == 'PDF to Text') {
+        final file = files.first;
+
+        if (file.path == null || file.path!.isEmpty) {
+          _showMessage('Unable to access the selected PDF file.');
+          return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PdfToTextScreen(selectedFile: file),
+          ),
+        );
+
+        return;
+      }
+
       // ==========================================================
       // REORDER PAGES
       // ==========================================================

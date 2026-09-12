@@ -103,6 +103,12 @@ class _AllToolsScreenState extends State<AllToolsScreen> {
       color: Color(0xFF12B886),
     ),
     _ToolItem(
+      title: 'PDF to Text',
+      subtitle: 'Extract text layer',
+      icon: Icons.text_snippet_outlined,
+      color: Color(0xFF12B886),
+    ),
+    _ToolItem(
       title: 'PDF to JPG',
       subtitle: 'Export images',
       icon: Icons.picture_as_pdf_outlined,
@@ -243,6 +249,24 @@ class _AllToolsScreenState extends State<AllToolsScreen> {
 
     // ==========================================================
     // COMPRESS PDF
+    // ==========================================================
+
+    if (tool.title == 'PDF to Text') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FilePickerScreen(
+            toolName: tool.title,
+            allowedExtensions: const ['pdf'],
+            allowMultiple: false,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // ==========================================================
+    // REORDER PAGES
     // ==========================================================
 
     if (tool.title == 'Reorder Pages') {

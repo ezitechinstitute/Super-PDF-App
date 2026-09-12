@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_super_app/core/services/api_service.dart';
+import 'package:pdf_super_app/core/services/recent_files_cache.dart';
 import 'package:pdf_super_app/features/home/screens/all_tools_screen.dart';
 import 'package:pdf_super_app/features/home/screens/file_picker_screen.dart';
 import 'package:pdf_super_app/features/home/screens/history_screen.dart';
@@ -24,6 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isLoadingProfile = true;
   bool _isLoadingRecentFiles = true;
+
+  /// True when the list on screen came from the cache because the API could
+  /// not be reached, so the user knows it may be out of date.
+  bool _recentFilesFromCache = false;
 
   List<_RecentFile> _recentFiles = [];
 
@@ -226,30 +231,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final List<_RecentFile> recentFiles = _parseRecentFiles(response.data);
 
+      // Keep the good response so the list still has something to show the
+      // next time the server cannot be reached.
+      await RecentFilesCache.save(response.data);
+
       if (!mounted) return;
 
       setState(() {
         _recentFiles = recentFiles;
+        _recentFilesFromCache = false;
         _isLoadingRecentFiles = false;
       });
     } on DioException catch (e) {
       debugPrint('❌ RECENT FILES API ERROR: ${e.response?.data}');
 
-      if (!mounted) return;
-
-      setState(() {
-        _recentFiles = [];
-        _isLoadingRecentFiles = false;
-      });
+      await _fallBackToCachedRecentFiles();
     } catch (e) {
       debugPrint('❌ RECENT FILES ERROR: $e');
 
-      if (!mounted) return;
+      await _fallBackToCachedRecentFiles();
+    }
+  }
 
-      setState(() {
-        _recentFiles = [];
-        _isLoadingRecentFiles = false;
-      });
+  /// Shows the last cached response when the API call fails. An empty or
+  /// unreadable cache simply leaves the section empty, as before.
+  Future<void> _fallBackToCachedRecentFiles() async {
+    List<_RecentFile> cached = <_RecentFile>[];
+
+    try {
+      final dynamic payload = await RecentFilesCache.read();
+
+      if (payload != null) {
+        cached = _parseRecentFiles(payload);
+      }
+    } catch (e) {
+      debugPrint('⚠️ Cached recent files could not be parsed: $e');
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _recentFiles = cached;
+      _recentFilesFromCache = cached.isNotEmpty;
+      _isLoadingRecentFiles = false;
+    });
+
+    if (cached.isNotEmpty) {
+      debugPrint('📦 Recent files served from cache (${cached.length} items)');
     }
   }
 
@@ -920,16 +948,47 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text(
-                  'Recent Files',
-                  style: TextStyle(
-                    color: Color(0xFF10255C),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
+              const Text(
+                'Recent Files',
+                style: TextStyle(
+                  color: Color(0xFF10255C),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
+              if (_recentFilesFromCache) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF8A00).withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        size: 12,
+                        color: Color(0xFFC96A00),
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Offline',
+                        style: TextStyle(
+                          color: Color(0xFFC96A00),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const Spacer(),
 
               GestureDetector(
                 onTap: () async {
