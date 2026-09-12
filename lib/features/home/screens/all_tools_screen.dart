@@ -58,6 +58,12 @@ class _AllToolsScreenState extends State<AllToolsScreen> {
       color: Color(0xFF00A8A8),
     ),
     _ToolItem(
+      title: 'Reorder Pages',
+      subtitle: 'Change page order',
+      icon: Icons.swap_vert_rounded,
+      color: Color(0xFF6C5CE7),
+    ),
+    _ToolItem(
       title: 'Rotate PDF',
       subtitle: 'Rotate pages',
       icon: Icons.rotate_right_rounded,
@@ -229,6 +235,24 @@ class _AllToolsScreenState extends State<AllToolsScreen> {
             toolName: tool.title,
             allowedExtensions: const ['pdf'],
             allowMultiple: true,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // ==========================================================
+    // COMPRESS PDF
+    // ==========================================================
+
+    if (tool.title == 'Reorder Pages') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FilePickerScreen(
+            toolName: tool.title,
+            allowedExtensions: const ['pdf'],
+            allowMultiple: false,
           ),
         ),
       );
