@@ -64,6 +64,13 @@ flutter:
   assets:
     - assets/images/
 
+  fonts:
+    # Dancing Script (SIL Open Font License 1.1) — the licence text ships
+    # alongside it in assets/fonts/, as the OFL requires.
+    - family: DancingScript
+      fonts:
+        - asset: assets/fonts/DancingScript-Regular.ttf
+
 # ============================================================
 # APP ICON
 # ============================================================

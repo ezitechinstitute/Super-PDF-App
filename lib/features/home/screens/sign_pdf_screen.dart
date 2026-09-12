@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
@@ -48,6 +48,11 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   /// bottom-centre placement this screen used before it could be moved.
   Offset _signatureAnchor = const Offset(0.5, 0.88);
 
+  /// Dancing Script, read from the bundle so it can be embedded in the PDF.
+  /// Standard PDF fonts have no cursive face, so without this the "Cursive"
+  /// style could only ever be italic Times.
+  Uint8List? _cursiveFontBytes;
+
   /// A render of the selected page, shown behind the draggable signature so
   /// the position can be judged against the actual content.
   Uint8List? _pagePreview;
@@ -59,8 +64,26 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   final List<String> _signatureFontFamilies = <String>[
     'Cursive',
     'Serif',
-    'Elegant',
+    'Sans',
   ];
+
+  /// Reads the bundled cursive font. A failure here is not fatal: the typed
+  /// signature falls back to the italic serif face it used before.
+  Future<void> _loadCursiveFont() async {
+    try {
+      final ByteData data = await rootBundle.load(
+        'assets/fonts/DancingScript-Regular.ttf',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _cursiveFontBytes = data.buffer.asUint8List();
+      });
+    } catch (e) {
+      debugPrint('⚠️ Cursive font could not be loaded: $e');
+    }
+  }
 
   // ============================================================
   // PDF
@@ -81,6 +104,7 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   @override
   void initState() {
     super.initState();
+    unawaited(_loadCursiveFont());
     _loadPdf();
   }
 
@@ -448,6 +472,13 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
 
       case 0:
       default:
+        final Uint8List? cursive = _cursiveFontBytes;
+
+        if (cursive != null) {
+          return PdfTrueTypeFont(cursive, fontSize);
+        }
+
+        // Bundle read failed; italic serif is the closest standard face.
         return PdfStandardFont(
           PdfFontFamily.timesRoman,
           fontSize,
@@ -1316,10 +1347,14 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   // PREVIEW FONT
   // ============================================================
 
+  /// 'cursive' is a CSS generic, not a font family — Flutter never resolved
+  /// it, so the cursive preview looked like the default face on Android and
+  /// all three looked alike on iOS. The bundled family fixes that, and the
+  /// other two use names that do exist on the platform.
   String? _getPreviewFontFamily(int index) {
     switch (index) {
       case 0:
-        return 'cursive';
+        return 'DancingScript';
       case 1:
         return 'serif';
       case 2:
