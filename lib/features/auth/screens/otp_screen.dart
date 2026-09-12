@@ -311,7 +311,7 @@ class _OtpScreenState extends State<OtpScreen> {
         SizedBox(
           width: double.infinity,
           height: 190,
-          child: Image.asset('assets/images/otp.png', fit: BoxFit.contain),
+          child: Image.asset('assets/images/otp.webp', fit: BoxFit.contain),
         ),
 
         const SizedBox(height: 6),

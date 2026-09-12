@@ -20,21 +20,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'All-in-One',
       highlightedTitle: 'PDF Tools',
       description: 'Everything you need to work with PDF in one powerful app.',
-      image: 'assets/images/onboarding1.png',
+      image: 'assets/images/onboarding1.webp',
     ),
     OnboardingData(
       title: 'Scan. Convert.',
       highlightedTitle: 'Edit. Save.',
       description:
           'Scan documents, convert images, edit and protect your PDFs.',
-      image: 'assets/images/onboarding2.png',
+      image: 'assets/images/onboarding2.webp',
     ),
     OnboardingData(
       title: 'AI-Powered',
       highlightedTitle: 'Productivity',
       description:
           'Summarize, extract and understand your documents with AI technology.',
-      image: 'assets/images/onboarding3.png',
+      image: 'assets/images/onboarding3.webp',
     ),
   ];
 

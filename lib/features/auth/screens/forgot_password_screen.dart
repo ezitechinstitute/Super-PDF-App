@@ -205,7 +205,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           width: double.infinity,
           height: 205,
           child: Image.asset(
-            'assets/images/forgot_password.png',
+            'assets/images/forgot_password.webp',
             fit: BoxFit.contain,
           ),
         ),

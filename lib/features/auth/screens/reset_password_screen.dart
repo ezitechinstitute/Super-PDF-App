@@ -238,7 +238,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           width: double.infinity,
           height: 205,
           child: Image.asset(
-            'assets/images/reset_password.png',
+            'assets/images/reset_password.webp',
             fit: BoxFit.contain,
           ),
         ),

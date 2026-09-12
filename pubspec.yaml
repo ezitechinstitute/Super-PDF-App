@@ -16,20 +16,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   font_awesome_flutter: ^11.0.0
 
-  # UI / Fonts
-  google_fonts: ^8.2.1
-
   # File Selection & File Handling
   file_picker: ^12.1.3
   path_provider: ^2.1.6
-  open_filex: ^4.7.0
 
   # PDF
   syncfusion_flutter_pdf: ^34.2.5
   syncfusion_flutter_pdfviewer: ^34.2.5
   pdf: ^3.11.3
-  printing: ^5.14.2
-  syncfusion_flutter_signaturepad: ^34.2.5
   flutter_svg: ^2.3.0
 
   # Images / Camera

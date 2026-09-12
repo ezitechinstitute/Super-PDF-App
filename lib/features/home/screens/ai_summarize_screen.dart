@@ -48,6 +48,11 @@ class _AiSummarizeScreenState extends State<AiSummarizeScreen> {
       return;
     }
 
+    // The existence check above is awaited, so the screen may already be gone.
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
       _isCompleted = false;
