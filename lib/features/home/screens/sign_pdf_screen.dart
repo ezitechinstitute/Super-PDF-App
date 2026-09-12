@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -6,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:pdf_super_app/core/services/api_service.dart';
 import 'package:pdf_super_app/features/home/screens/pdf_preview_screen.dart';
@@ -40,6 +42,17 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
       TextEditingController();
 
   _SignatureMethod _signatureMethod = _SignatureMethod.draw;
+
+  /// Where the signature sits on the page, as a fraction of page width and
+  /// height, measured to the centre of the signature. The default matches the
+  /// bottom-centre placement this screen used before it could be moved.
+  Offset _signatureAnchor = const Offset(0.5, 0.88);
+
+  /// A render of the selected page, shown behind the draggable signature so
+  /// the position can be judged against the actual content.
+  Uint8List? _pagePreview;
+  bool _isRenderingPreview = false;
+  double _pageAspectRatio = 1 / 1.414;
 
   int _selectedSignatureStyle = 0;
 
@@ -137,6 +150,8 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
         _isLoading = false;
       });
 
+      unawaited(_renderPagePreview());
+
       debugPrint('==========================================');
       debugPrint('✍️ SIGN PDF');
       debugPrint('📄 File: ${widget.selectedFile.name}');
@@ -165,6 +180,63 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
     setState(() {
       _selectedPageIndex = index;
     });
+
+    unawaited(_renderPagePreview());
+  }
+
+  // ============================================================
+  // PAGE PREVIEW
+  // ============================================================
+
+  /// Renders the selected page so the signature can be positioned against the
+  /// real content. Failure is not fatal: the positioner falls back to a blank
+  /// sheet of the right shape.
+  Future<void> _renderPagePreview() async {
+    final String? path = widget.selectedFile.path;
+
+    if (path == null || path.trim().isEmpty) return;
+
+    setState(() {
+      _isRenderingPreview = true;
+      _pagePreview = null;
+    });
+
+    pdfx.PdfDocument? document;
+    pdfx.PdfPage? page;
+
+    try {
+      document = await pdfx.PdfDocument.openFile(path);
+      page = await document.getPage(_selectedPageIndex + 1);
+
+      final pdfx.PdfPageImage? image = await page.render(
+        width: page.width,
+        height: page.height,
+        format: pdfx.PdfPageImageFormat.jpeg,
+        backgroundColor: '#FFFFFF',
+        quality: 70,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _pagePreview = image?.bytes;
+        if (page != null && page.width > 0) {
+          _pageAspectRatio = page.width / page.height;
+        }
+        _isRenderingPreview = false;
+      });
+    } catch (e) {
+      debugPrint('⚠️ Page preview failed: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isRenderingPreview = false;
+      });
+    } finally {
+      await page?.close();
+      await document?.close();
+    }
   }
 
   // ============================================================
@@ -322,9 +394,12 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
 
     const double boxHeight = 80.0;
 
-    final double left = (pageSize.width - boxWidth) / 2;
+    double left = _signatureAnchor.dx * pageSize.width - boxWidth / 2;
 
-    final double top = pageSize.height - boxHeight - 40;
+    double top = _signatureAnchor.dy * pageSize.height - boxHeight / 2;
+
+    left = left.clamp(10.0, (pageSize.width - boxWidth - 10).clamp(10.0, double.infinity));
+    top = top.clamp(10.0, (pageSize.height - boxHeight - 10).clamp(10.0, double.infinity));
 
     final Rect textRect = Rect.fromLTWH(left, top, boxWidth, boxHeight);
 
@@ -459,9 +534,10 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
 
         signatureHeight = signatureHeight.clamp(50.0, 120.0);
 
-        double left = (pageSize.width - signatureWidth) / 2;
+        // Anchor is the signature's centre, as a fraction of the page.
+        double left = _signatureAnchor.dx * pageSize.width - signatureWidth / 2;
 
-        double top = pageSize.height - signatureHeight - 45;
+        double top = _signatureAnchor.dy * pageSize.height - signatureHeight / 2;
 
         if (left < 10) {
           left = 10;
@@ -1041,11 +1117,8 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          _buildInfoBox(
-            'Your drawn signature will be placed near '
-            'the bottom-center of the selected page.',
-          ),
+          const SizedBox(height: 14),
+          _buildPositionSection(),
         ],
       ),
     );
@@ -1232,11 +1305,8 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          _buildInfoBox(
-            'Your typed signature will be placed near '
-            'the bottom-center of the selected page.',
-          ),
+          const SizedBox(height: 14),
+          _buildPositionSection(),
         ],
       ),
     );
@@ -1263,35 +1333,138 @@ class _SignPdfScreenState extends State<SignPdfScreen> {
   // INFO BOX
   // ============================================================
 
-  Widget _buildInfoBox(String message) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFD0E1FF)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: Color(0xFF1769FF),
+  // ============================================================
+  // POSITION
+  // ============================================================
+
+  Widget _buildPositionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Position',
+          style: TextStyle(
+            color: Color(0xFF10255C),
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
           ),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Color(0xFF647A9B),
-                fontSize: 11,
-                height: 1.4,
-              ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Drag the signature to where it should sit on the page.',
+          style: TextStyle(color: Color(0xFF7A8CA6), fontSize: 11),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 320),
+            child: AspectRatio(
+              aspectRatio: _pageAspectRatio,
+              child: _buildPositionCanvas(),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        Center(
+          child: TextButton.icon(
+            onPressed: _isSigning
+                ? null
+                : () {
+                    setState(() {
+                      _signatureAnchor = const Offset(0.5, 0.88);
+                    });
+                  },
+            icon: const Icon(Icons.restart_alt_rounded, size: 18),
+            label: const Text('Reset to bottom-centre'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPositionCanvas() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double w = constraints.maxWidth;
+        final double h = constraints.maxHeight;
+
+        // The signature box drawn into the PDF is 36% of page width, so the
+        // handle mirrors that. Height follows the drawn strokes' aspect.
+        final double boxWidth = w * 0.36;
+        final double boxHeight = boxWidth * 0.42;
+
+        void moveTo(Offset local) {
+          final double halfW = boxWidth / 2 / w;
+          final double halfH = boxHeight / 2 / h;
+
+          setState(() {
+            _signatureAnchor = Offset(
+              (local.dx / w).clamp(halfW, 1 - halfW),
+              (local.dy / h).clamp(halfH, 1 - halfH),
+            );
+          });
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: _isSigning ? null : (d) => moveTo(d.localPosition),
+            onPanUpdate: _isSigning ? null : (d) => moveTo(d.localPosition),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFC7D4E7)),
+                  ),
+                  child: _pagePreview != null
+                      ? Image.memory(_pagePreview!, fit: BoxFit.fill)
+                      : Center(
+                          child: _isRenderingPreview
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.description_outlined,
+                                  color: Color(0xFFC7D4E7),
+                                  size: 34,
+                                ),
+                        ),
+                ),
+                Positioned(
+                  left: _signatureAnchor.dx * w - boxWidth / 2,
+                  top: _signatureAnchor.dy * h - boxHeight / 2,
+                  width: boxWidth,
+                  height: boxHeight,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1769FF).withValues(alpha: 0.10),
+                      border: Border.all(
+                        color: const Color(0xFF1769FF),
+                        width: 1.4,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.draw_rounded,
+                        size: 18,
+                        color: Color(0xFF1769FF),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

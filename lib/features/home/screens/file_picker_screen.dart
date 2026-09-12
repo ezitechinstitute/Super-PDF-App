@@ -9,6 +9,7 @@ import 'package:pdf_super_app/features/home/screens/compress_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/protect_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/remove_pages_screen.dart';
 import 'package:pdf_super_app/features/home/screens/extract_pages_screen.dart';
+import 'package:pdf_super_app/features/home/screens/reorder_pages_screen.dart';
 import 'package:pdf_super_app/features/home/screens/rotate_pdf_screen.dart';
 import 'package:pdf_super_app/features/home/screens/sign_pdf_screen.dart';
 //import 'package:pdf_super_app/features/home/screens/png_to_pdf_screen.dart';
@@ -249,6 +250,28 @@ class _FilePickerScreenState extends State<FilePickerScreen> {
 
         return;
       }
+      // ==========================================================
+      // REORDER PAGES
+      // ==========================================================
+
+      if (widget.toolName == 'Reorder Pages') {
+        final file = files.first;
+
+        if (file.path == null || file.path!.isEmpty) {
+          _showMessage('Unable to access the selected PDF file.');
+          return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ReorderPagesScreen(selectedFile: file),
+          ),
+        );
+
+        return;
+      }
+
       // ==========================================================
       // ROTATE PDF
       // ==========================================================
